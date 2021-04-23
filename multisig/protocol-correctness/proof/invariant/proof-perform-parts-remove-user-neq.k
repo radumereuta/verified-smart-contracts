@@ -1,19 +1,23 @@
 //@ proof
-require "trusted-perform-parts-change-quorum-no-quorum.k"  //@ Bazel remove
-require "trusted-perform-parts-change-quorum-with-quorum.k"  //@ Bazel remove
+require "trusted-perform-parts-remove-user-BoardMember.k"  //@ Bazel remove
+require "trusted-perform-parts-remove-user-BoardMember-too-few.k"  //@ Bazel remove
+require "trusted-perform-parts-remove-user-Proposer.k"  //@ Bazel remove
+require "trusted-perform-parts-remove-user-Proposer-nobody-left.k"  //@ Bazel remove
 
-module PROOF-PERFORM-PARTS-CHANGE-QUORUM
+module PROOF-PERFORM-PARTS-REMOVE-USER-NEQ
   imports INVARIANT-EXECUTION
 
-  imports TRUSTED-PERFORM-PARTS-CHANGE-QUORUM-NO-QUORUM
-  imports TRUSTED-PERFORM-PARTS-CHANGE-QUORUM-WITH-QUORUM
+  imports TRUSTED-PERFORM-PARTS-REMOVE-USER-BOARDMEMBER
+  imports TRUSTED-PERFORM-PARTS-REMOVE-USER-BOARDMEMBER-TOO-FEW
+  imports TRUSTED-PERFORM-PARTS-REMOVE-USER-PROPOSER
+  imports TRUSTED-PERFORM-PARTS-REMOVE-USER-PROPOSER-NOBODY-LEFT
 //@ trusted
-// module TRUSTED-PERFORM-PARTS-CHANGE-QUORUM
+// module TRUSTED-PERFORM-PARTS-REMOVE-USER-NEQ
 //@ end
   imports PERFORM-ACTION-ENDPOINT-INSTRUMENTATION
 
   claim <T><TT>
-          <k> splitPerformActionEndpoint4(ChangeQuorum(_NewQuorum:Usize) #as Action:Action)
+          <k> splitPerformActionEndpoint4(RemoveUser(UserAddress:Address) #as Action:Action)
               ~> call(performActionEndpoint(ActionId:Usize))
               ~> popContext
               ~> evaluateReturnValue
@@ -81,6 +85,7 @@ module PROOF-PERFORM-PARTS-CHANGE-QUORUM
             expand(expanded))
         andBool (CallerRole ==K BoardMember orBool CallerRole ==K Proposer)
         andBool Quorum <=Int countCanSignFunction({ActionSigners[ActionId] orDefault [.]}:>ExpressionList, opaque(UserIdToRole))
+        andBool notBool UserAddress ==K CallerAddress
     ensures invariant(
         ?NumUsers1,
         ?UserIdToAddress1,

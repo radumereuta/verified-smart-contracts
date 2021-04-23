@@ -1,11 +1,95 @@
-require "../execution-proof.k"
-require "../invariant/invariant-execution.k"
+require "protocol-correctness/proof/execution-proof.k"
+require "protocol-correctness/proof/invariant/invariant-execution.k"
 
 module MALICIOUS-USER-EXECUTE-SYNTAX
   imports EXECUTION-PROOF-SYNTAX
 endmodule
 
+module MALICIOUS-USER-INVARIANT-FUNCTIONS
+  imports MAP
+  imports PSEUDOCODE-SYNTAX
+
+  syntax Bool ::= onlyThisSigner(addressToUserId:Map, Address, actionSigners:Map)
+      [function, functional]
+
+  rule  onlyThisSigner(
+            AddressToUserId:Map,
+            Address:Address,
+            .Map)
+      => true
+  rule  onlyThisSigner(
+            AddressToUserId:Map,
+            Address:Address,
+            K |-> Signers ActionSigners:Map)
+      =>
+        #if Address in_keys(AddressToUserId)
+        #then oneElementList(AddressToUserId[Address] orDefault void, Signers)
+        #else false
+        #fi
+    [simplification]
+
+  syntax Bool ::= oneElementList(element:KItem, L:ExpressionList)
+  rule oneElementList(E:Expression, [E, .]) => true
+  rule oneElementList(_, _) => false [owise]
+endmodule
+
+module MALICIOUS-USER-INVARIANT
+  imports INVARIANT
+  imports MALICIOUS-USER-INVARIANT-FUNCTIONS
+
+  syntax Bool ::= maliciousInvariant(
+            maliciousAddress:Map,
+            numUsers:Usize,
+            initialUserIdToAddress:Map,
+            currentUserIdToAddress:Map,
+            initinalAddressToUserId:Map,
+            currentAddressToUserId:Map,
+            numBoardMembers:Usize,
+            numProposers:Usize,
+            userRoles:Map,
+            quorum:Usize,
+            actionLastIndex:Usize,
+            actionData:Map,
+            actionSigners:Map,
+            PropertyHandling)
+      [function, functional]
+
+  rule  maliciousInvariant(
+            MaliciousAddress:Map,
+            NumUsers:Usize,
+            InitialUserIdToAddress:Map,
+            CurrentUserIdToAddress:Map,
+            InitinalAddressToUserId:Map,
+            CurrentAddressToUserId:Map,
+            NumBoardMembers:Usize,
+            NumProposers:Usize,
+            UserRoles:Map,
+            Quorum:Usize,
+            ActionLastIndex:Usize,
+            ActionData:Map,
+            ActionSigners:Map,
+            Handling:PropertyHandling)
+      => true
+        andBool invariant(
+            MaliciousAddress,
+            NumUsers,
+            CurrentUserIdToAddress,
+            CurrentAddressToUserId,
+            NumBoardMembers,
+            NumProposers,
+            UserRoles,
+            Quorum,
+            ActionLastIndex,
+            ActionData,
+            ActionSigners,
+            Handling)
+        andBool mapIncluded(AddressToUserId, ?AddressToUserId)
+        andBool mapIncluded(UserIdToAddress, ?UserIdToAddress)
+        andBool atMostThisSigner(AddressToUserId, MaliciousAddress, ?ActionSigners1)
+endmodule
+
 module MALICIOUS-USER-HELPERS
+  imports PSEUDOCODE-SYNTAX
 
   syntax KItem ::= runExternalCallsFromUser(Address, steps:Int)
 
@@ -43,4 +127,5 @@ endmodule
 module MALICIOUS-USER-EXECUTE
   imports EXECUTION-PROOF
   imports INVARIANT-EXECUTION
+  imports MALICIOUS-USER-INVARIANT
 endmodule

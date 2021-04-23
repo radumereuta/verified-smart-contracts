@@ -12,9 +12,9 @@ module PROOF-CANNOT-PERFORM
               NumProposers:Usize,
               UserRoles:Map,
               Quorum:Usize,
-              ActionLastIndex0:Usize,
-              ActionId:Usize |-> Action:Action,
-              .Map,  // ActionSigners
+              ActionLastIndex:Usize,
+              ActionData:Map,
+              ActionSigners:Map,
               PerformedActions:List)
         </TT></T>
       =>
@@ -35,19 +35,25 @@ module PROOF-CANNOT-PERFORM
         </TT></T>
     requires true
         andBool maliciousInvariant(
+            MaliciousAddress:Map,
             NumUsers:Usize,
             UserIdToAddress:Map,
+            UserIdToAddress:Map,
+            AddressToUserId:Map,
             AddressToUserId:Map,
             NumBoardMembers:Usize,
             NumProposers:Usize,
             UserRoles:Map,
             Quorum:Usize,
-            ActionLastIndex0:Usize,
-            ActionData0:Map,
-            ActionSigners0:Map,
+            ActionLastIndex:Usize,
+            ActionData:Map,
+            ActionSigners:Map,
             expand(expanded))
+        andBool atMostThisSigner(AddressToUserId, MaliciousAddress, ?ActionSigners1)
+
+        andBool Quorum >= 2
     ensures true
         andBool mapIncluded(AddressToUserId, ?AddressToUserId)
         andBool mapIncluded(UserIdToAddress, ?UserIdToAddress)
-        andBool atMostOneSigner(?ActionSigners1)
+        andBool atMostThisSigner(AddressToUserId, MaliciousAddress, ?ActionSigners1)
 endmodule
