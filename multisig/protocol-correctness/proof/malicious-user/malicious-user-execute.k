@@ -38,7 +38,7 @@ module MALICIOUS-USER-INVARIANT
   imports MALICIOUS-USER-INVARIANT-FUNCTIONS
 
   syntax Bool ::= maliciousInvariant(
-            maliciousAddress:Map,
+            maliciousAddress:Address,
             numUsers:Usize,
             initialUserIdToAddress:Map,
             currentUserIdToAddress:Map,
@@ -55,7 +55,7 @@ module MALICIOUS-USER-INVARIANT
       [function, functional]
 
   rule  maliciousInvariant(
-            MaliciousAddress:Map,
+            MaliciousAddress:Address,
             NumUsers:Usize,
             InitialUserIdToAddress:Map,
             CurrentUserIdToAddress:Map,
