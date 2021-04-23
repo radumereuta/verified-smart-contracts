@@ -71,7 +71,6 @@ module MALICIOUS-USER-INVARIANT
             Handling:PropertyHandling)
       => true
         andBool invariant(
-            MaliciousAddress,
             NumUsers,
             CurrentUserIdToAddress,
             CurrentAddressToUserId,
