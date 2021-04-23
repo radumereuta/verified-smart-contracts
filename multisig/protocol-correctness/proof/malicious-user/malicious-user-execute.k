@@ -84,7 +84,7 @@ module MALICIOUS-USER-INVARIANT
             Handling)
         andBool mapIncluded(AddressToUserId, ?AddressToUserId)
         andBool mapIncluded(UserIdToAddress, ?UserIdToAddress)
-        andBool atMostThisSigner(AddressToUserId, MaliciousAddress, ?ActionSigners1)
+        andBool onlyThisSigner(AddressToUserId, MaliciousAddress, ?ActionSigners1)
 endmodule
 
 module MALICIOUS-USER-HELPERS
