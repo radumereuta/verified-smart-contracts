@@ -17,7 +17,7 @@ module PROOF-PERFORM-PARTS-REMOVE-USER-EQ
   imports PERFORM-ACTION-ENDPOINT-INSTRUMENTATION
 
   claim <T><TT>
-          <k> splitPerformActionEndpoint4(RemoveUser(CallerAddress:Address) #as Action:Action)
+          <k> splitRemoveUser1(CallerAddress:Address)
               ~> call(performActionEndpoint(ActionId:Usize))
               ~> popContext
               ~> evaluateReturnValue
@@ -34,7 +34,7 @@ module PROOF-PERFORM-PARTS-REMOVE-USER-EQ
               (CallerId |-> CallerRole:UserRole _UserIdToRole:Map) #as UserIdToRole:Map,
               u(Quorum:Int),
               ActionLastIndex0:Usize,
-              (ActionId |-> Action _ActionData:Map) #as ActionData:Map,
+              (ActionId |-> RemoveUser(CallerAddress:Address) _ActionData:Map) #as ActionData:Map,
               ActionSigners:Map,
               CallerAddress:Address,
               stack(

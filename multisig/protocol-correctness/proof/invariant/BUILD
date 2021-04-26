@@ -345,6 +345,8 @@ kprove_test(
   ],
   semantics = ":invariant-execution",
   timeout = "eternal",
+  breadth = "9",
+  # depth = 32
 )
 
 kprove_test(
@@ -359,7 +361,7 @@ kprove_test(
   semantics = ":invariant-execution",
   timeout = "eternal",
   breadth = "12",
-  # depth = ~31
+  # depth = ~24
 )
 
 kprove_test(
@@ -373,6 +375,8 @@ kprove_test(
   ],
   semantics = ":invariant-execution",
   timeout = "eternal",
+  breadth = "13",
+  # depth = ~25
 )
 
 kprove_test(

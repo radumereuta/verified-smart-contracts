@@ -13,22 +13,23 @@ module MALICIOUS-USER-INVARIANT-FUNCTIONS
       [function, functional]
 
   rule  onlyThisSigner(
-            AddressToUserId:Map,
-            Address:Address,
+            _AddressToUserId:Map,
+            _Address:Address,
             .Map)
       => true
   rule  onlyThisSigner(
             AddressToUserId:Map,
             Address:Address,
-            K |-> Signers ActionSigners:Map)
+            _Key |-> Signers ActionSigners:Map)
       =>
         #if Address in_keys(AddressToUserId)
         #then oneElementList(AddressToUserId[Address] orDefault void, Signers)
         #else false
         #fi
+        andBool onlyThisSigner(AddressToUserId, Address, ActionSigners)
     [simplification]
 
-  syntax Bool ::= oneElementList(element:KItem, L:ExpressionList)
+  syntax Bool ::= oneElementList(element:KItem, ExpressionList) [function, functional]
   rule oneElementList(E:Expression, [E, .]) => true
   rule oneElementList(_, _) => false [owise]
 endmodule
@@ -59,12 +60,12 @@ module MALICIOUS-USER-INVARIANT
             NumUsers:Usize,
             InitialUserIdToAddress:Map,
             CurrentUserIdToAddress:Map,
-            InitinalAddressToUserId:Map,
+            InitialAddressToUserId:Map,
             CurrentAddressToUserId:Map,
             NumBoardMembers:Usize,
             NumProposers:Usize,
             UserRoles:Map,
-            Quorum:Usize,
+            u(Quorum:Int),
             ActionLastIndex:Usize,
             ActionData:Map,
             ActionSigners:Map,
@@ -77,22 +78,24 @@ module MALICIOUS-USER-INVARIANT
             NumBoardMembers,
             NumProposers,
             UserRoles,
-            Quorum,
+            u(Quorum),
             ActionLastIndex,
             ActionData,
             ActionSigners,
             Handling)
-        andBool mapIncluded(AddressToUserId, ?AddressToUserId)
-        andBool mapIncluded(UserIdToAddress, ?UserIdToAddress)
-        andBool onlyThisSigner(AddressToUserId, MaliciousAddress, ?ActionSigners1)
+        andBool mapIncluded(InitialUserIdToAddress, CurrentUserIdToAddress)
+        andBool mapIncluded(InitialAddressToUserId, CurrentAddressToUserId)
+        andBool onlyThisSigner(CurrentAddressToUserId, MaliciousAddress, ActionSigners)
+        andBool Quorum >=Int 2
 endmodule
+
 
 module MALICIOUS-USER-HELPERS
   imports PSEUDOCODE-SYNTAX
 
   syntax KItem ::= runExternalCallsFromUser(Address, steps:Int)
 
-  rule runExternalCallsFromUser(A:Address, Steps:Int) => .K
+  rule runExternalCallsFromUser(_:Address, Steps:Int) => .K
     requires Steps <=Int 0
   rule runExternalCallsFromUser(A:Address, Steps:Int)
       => runExternalCallFromUser(A) ~> runExternalCallsFromUser(A, Steps -Int 1)
@@ -100,31 +103,44 @@ module MALICIOUS-USER-HELPERS
 
   syntax KItem ::= runExternalCallFromUser(Address)
 
-  rule runExternalCallFromUser(A:Address) => runExternalCall(from A run proposeAddBoardMember(U:Usize))
-  rule runExternalCallFromUser(A:Address) => runExternalCall(from A run proposeAddProposer(U:Usize))
-  rule runExternalCallFromUser(A:Address) => runExternalCall(from A run proposeRemoveUser(U:Usize))
-  rule runExternalCallFromUser(A:Address) => runExternalCall(from A run proposeChangeQuorum(Quorum:Usize))
-  rule runExternalCallFromUser(A:Address) => runExternalCall(from A run proposeSendEgld(To:Address, Amount:BigUint, Data:BoxedBytes))
-  rule runExternalCallFromUser(A:Address) => runExternalCall(from A run proposeSCDeploy(
-          Amount:BigUint,
-          Code:BoxedBytes,
-          Upgradeable:Bool,
-          Payable:Bool,
-          Readable:Bool,
-          Args:ExpressionList))
-  rule runExternalCallFromUser(A:Address) => runExternalCall(from A run proposeSCCall(
-          To:Address,
-          Amount:BigUint,
-          Function:BoxedBytes,
-          Args:ExpressionList))
-  rule runExternalCallFromUser(A:Address) => runExternalCall(from A run sign(A:ActionId))
-  rule runExternalCallFromUser(A:Address) => runExternalCall(from A run unsign(A:ActionId))
-  rule runExternalCallFromUser(A:Address) => runExternalCall(from A run performActionEndpoint(A:ActionId))
-  rule runExternalCallFromUser(A:Address) => runExternalCall(from A run discardAction(A:ActionId))
+  rule  runExternalCallFromUser(A:Address)
+        => runExternalCall(from A run proposeAddBoardMember(?_UserAddress:Address);)
+  rule  runExternalCallFromUser(A:Address)
+        => runExternalCall(from A run proposeAddProposer(?_UserAddress:Address);)
+  rule  runExternalCallFromUser(A:Address)
+        => runExternalCall(from A run proposeRemoveUser(?_UserAddress:Address);)
+  rule  runExternalCallFromUser(A:Address)
+        => runExternalCall(from A run proposeChangeQuorum(?_Quorum:Usize);)
+  rule  runExternalCallFromUser(A:Address)
+        => runExternalCall(from A run proposeSendEgld(
+            ?_To:Address, ?_Amount:BigUint, ?_Data:BoxedBytes);)
+  rule  runExternalCallFromUser(A:Address)
+        => runExternalCall(from A run proposeSCDeploy(
+            ?_Amount:BigUint,
+            ?_Code:BoxedBytes,
+            ?_Upgradeable:Bool,
+            ?_Payable:Bool,
+            ?_Readable:Bool,
+            ?_Args:ExpressionList);)
+  rule  runExternalCallFromUser(A:Address)
+        => runExternalCall(from A run proposeSCCall(
+            ?_To:Address,
+            ?_Amount:BigUint,
+            ?_Function:BoxedBytes,
+            ?_Args:ExpressionList);)
+  rule  runExternalCallFromUser(A:Address)
+        => runExternalCall(from A run sign(?_ActionId:Usize);)
+  rule  runExternalCallFromUser(A:Address)
+        => runExternalCall(from A run unsign(?_ActionId:Usize);)
+  rule  runExternalCallFromUser(A:Address)
+        => runExternalCall(from A run performActionEndpoint(?_ActionId:Usize);)
+  rule  runExternalCallFromUser(A:Address)
+        => runExternalCall(from A run discardAction(?_ActionId:Usize);)
 endmodule
 
 module MALICIOUS-USER-EXECUTE
   imports EXECUTION-PROOF
   imports INVARIANT-EXECUTION
   imports MALICIOUS-USER-INVARIANT
+  imports MALICIOUS-USER-HELPERS
 endmodule

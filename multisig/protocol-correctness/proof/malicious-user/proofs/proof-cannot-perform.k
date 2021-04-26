@@ -11,7 +11,7 @@ module PROOF-CANNOT-PERFORM
               NumBoardMembers:Usize,
               NumProposers:Usize,
               UserRoles:Map,
-              Quorum:Usize,
+              u(Quorum:Int),
               ActionLastIndex:Usize,
               ActionData:Map,
               ActionSigners:Map,
@@ -19,7 +19,7 @@ module PROOF-CANNOT-PERFORM
         </TT></T>
       =>
         <T><TT>
-          <k> runExternalCalls(EC) </k>
+          <k> K </k>
           invariantState(
               NumUsers,
               ?UserIdToAddress:Map,
@@ -27,7 +27,7 @@ module PROOF-CANNOT-PERFORM
               NumBoardMembers,
               NumProposers,
               UserRoles,
-              Quorum,
+              u(Quorum),
               ?ActionLastIndex1:Usize,
               ?ActionData1:Map,
               ?ActionSigners1:Map,
@@ -35,25 +35,36 @@ module PROOF-CANNOT-PERFORM
         </TT></T>
     requires true
         andBool maliciousInvariant(
-            MaliciousAddress:Map,
-            NumUsers:Usize,
-            UserIdToAddress:Map,
-            UserIdToAddress:Map,
-            AddressToUserId:Map,
-            AddressToUserId:Map,
-            NumBoardMembers:Usize,
-            NumProposers:Usize,
-            UserRoles:Map,
-            Quorum:Usize,
-            ActionLastIndex:Usize,
-            ActionData:Map,
-            ActionSigners:Map,
+            MaliciousAddress,
+            NumUsers,
+            UserIdToAddress,
+            UserIdToAddress,
+            AddressToUserId,
+            AddressToUserId,
+            NumBoardMembers,
+            NumProposers,
+            UserRoles,
+            u(Quorum),
+            ActionLastIndex,
+            ActionData,
+            ActionSigners,
             expand(expanded))
-        andBool atMostThisSigner(AddressToUserId, MaliciousAddress, ?ActionSigners1)
 
-        andBool Quorum >= 2
+        // andBool Quorum >=Int 2
     ensures true
-        andBool mapIncluded(AddressToUserId, ?AddressToUserId)
-        andBool mapIncluded(UserIdToAddress, ?UserIdToAddress)
-        andBool atMostThisSigner(AddressToUserId, MaliciousAddress, ?ActionSigners1)
+        andBool maliciousInvariant(
+            MaliciousAddress,
+            NumUsers,
+            UserIdToAddress,
+            ?UserIdToAddress,
+            AddressToUserId,
+            ?AddressToUserId,
+            NumBoardMembers,
+            NumProposers,
+            UserRoles,
+            u(Quorum),
+            ?ActionLastIndex,
+            ?ActionData,
+            ?ActionSigners,
+            usesExpanded)
 endmodule
